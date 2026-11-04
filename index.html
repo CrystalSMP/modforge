@@ -16,6 +16,7 @@
 <body>
   <div>
     <h1>⛏ ModForge <b>AI</b></h1>
+    <h2 id="title" style="font-size:20px;margin:16px 0 0;color:#f5c542"></h2>
     <div class="spin" id="spin"></div>
     <p id="msg">Verbinde mit dem Server…</p>
   </div>
@@ -43,6 +44,11 @@
           const r = await src();
           if (!r.ok) continue;
           const s = await r.json();
+          if (s.maintenance) {
+            document.getElementById('title').innerHTML = '🛠️ Wartungsarbeiten';
+            msg(s.message || 'ModForge AI wird gerade verbessert. Bald sind wir wieder da!', false);
+            return setTimeout(tryConnect, 60000); // prüft jede Minute, ob es weitergeht
+          }
           if (!s.online || !s.url) { sawOffline = true; continue; }
           if (await healthy(s.url)) return location.replace(s.url);
         } catch {}
