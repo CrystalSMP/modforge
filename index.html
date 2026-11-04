@@ -53,8 +53,9 @@
           if (await healthy(s.url)) return location.replace(s.url);
         } catch {}
       }
-      msg(sawOffline ? '😴 Die Seite ist gerade offline. Ich versuche es automatisch weiter…'
-                     : '⏳ Der Server startet gerade neu. Einen Moment…', false);
+      // Server nicht erreichbar (z. B. PC aus) -> wie Wartung anzeigen
+      document.getElementById('title').innerHTML = '😴 Gerade offline';
+      msg('ModForge AI ist im Moment nicht erreichbar. Die Seite verbindet sich automatisch, sobald sie wieder da ist.', false);
       setTimeout(tryConnect, 15000); // alle 15 Sekunden neu versuchen
     }
     tryConnect();
