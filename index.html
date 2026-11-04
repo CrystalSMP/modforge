@@ -20,23 +20,38 @@
     <p id="msg">Verbinde mit dem Server…</p>
   </div>
   <script>
-    // Aktuelle Tunnel-Adresse direkt aus dem Repo lesen (umgeht den Pages-Cache)
+    // Aktuelle Tunnel-Adresse lesen – mehrere Quellen, falls eine begrenzt oder veraltet ist
     const repo = location.pathname.split('/').filter(Boolean)[0];
     const owner = location.hostname.split('.')[0];
-    const offline = (t) => { document.getElementById('spin').remove(); document.getElementById('msg').textContent = t; };
-    (async () => {
-      try {
-        const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/tunnel.json?t=${Date.now()}`,
-          { headers: { Accept: 'application/vnd.github.raw+json' } });
-        const s = await r.json();
-        if (!s.online || !s.url) return offline('😴 Die Seite ist gerade offline. Schau später nochmal vorbei!');
-        const ok = await fetch(s.url + '/api/health', { signal: AbortSignal.timeout(8000) }).then((x) => x.ok).catch(() => false);
-        if (!ok) return offline('😴 Der Server antwortet gerade nicht. Versuch es in ein paar Minuten nochmal.');
-        location.replace(s.url);
-      } catch {
-        offline('⚠️ Verbindung fehlgeschlagen. Bitte Seite neu laden.');
+    const t = () => Date.now();
+    const SOURCES = [
+      () => fetch(`https://api.github.com/repos/${owner}/${repo}/contents/tunnel.json?t=${t()}`, { headers: { Accept: 'application/vnd.github.raw+json' } }),
+      () => fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/tunnel.json?t=${t()}`),
+      () => fetch(`tunnel.json?t=${t()}`),
+    ];
+    const msg = (text, spinning) => {
+      document.getElementById('msg').textContent = text;
+      document.getElementById('spin').style.display = spinning ? '' : 'none';
+    };
+    const healthy = (url) => fetch(url + '/api/health', { signal: AbortSignal.timeout(8000) }).then((x) => x.ok).catch(() => false);
+
+    async function tryConnect() {
+      msg('Verbinde mit dem Server…', true);
+      let sawOffline = false;
+      for (const src of SOURCES) {
+        try {
+          const r = await src();
+          if (!r.ok) continue;
+          const s = await r.json();
+          if (!s.online || !s.url) { sawOffline = true; continue; }
+          if (await healthy(s.url)) return location.replace(s.url);
+        } catch {}
       }
-    })();
+      msg(sawOffline ? '😴 Die Seite ist gerade offline. Ich versuche es automatisch weiter…'
+                     : '⏳ Der Server startet gerade neu. Einen Moment…', false);
+      setTimeout(tryConnect, 15000); // alle 15 Sekunden neu versuchen
+    }
+    tryConnect();
   </script>
 </body>
 </html>
