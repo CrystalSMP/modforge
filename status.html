@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ModForge AI – Status</title>
+  <meta name="description" content="Live status of ModForge AI">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d12; --panel: rgba(22, 26, 35, .85); --panel2: #1e2330; --line: rgba(255,255,255,.08); --line2: rgba(255,255,255,.14);
+      --text: #eef1f7; --muted: #9099ad; --c: #62c45a; --c2: #8ee07f; --glow: rgba(98,196,90,.45);
+    }
+    body[data-state="maintenance"] { --c: #f5c542; --c2: #ffe08a; --glow: rgba(245,197,66,.45); }
+    body[data-state="offline"]     { --c: #ff5f6d; --c2: #ff9aa3; --glow: rgba(255,95,109,.45); }
+    body[data-state="sleeping"]    { --c: #8b7bff; --c2: #c2b8ff; --glow: rgba(139,123,255,.45); }
+    body[data-state="loading"]     { --c: #9099ad; --c2: #c9d1e0; --glow: rgba(144,153,173,.3); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; overflow-x: hidden; transition: background .6s; }
+    .bg { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: radial-gradient(800px 500px at 50% -5%, var(--glow), transparent 65%); opacity: .55; transition: background .6s; }
+    .bg::before { content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 48px 48px; mask-image: linear-gradient(to bottom, #000, transparent 75%); }
+    a { color: inherit; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 16px clamp(16px, 4vw, 32px); gap: 12px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: 'Press Start 2P', monospace; font-size: 13px; text-decoration: none; }
+    .brand b { color: #62c45a; margin-left: 4px; }
+    .logo { width: 22px; height: 22px; border-radius: 3px; background: linear-gradient(#62c45a 0 35%, #8b5a2b 35% 100%);
+      box-shadow: inset -3px -3px 0 rgba(0,0,0,.3), inset 3px 3px 0 rgba(255,255,255,.2); }
+    .open { font-size: 14px; font-weight: 600; text-decoration: none; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line2); background: var(--panel); }
+    .open:hover { border-color: var(--c); }
+    main { max-width: 820px; margin: 0 auto; padding: 0 16px 60px; }
+
+    .hero { text-align: center; padding: 40px 0 30px; }
+    .orb { width: 140px; height: 140px; margin: 0 auto 28px; border-radius: 50%; position: relative; display: grid; place-items: center; font-size: 54px;
+      background: radial-gradient(circle at 35% 30%, var(--c2), var(--c) 55%, color-mix(in srgb, var(--c) 60%, #000) 100%);
+      box-shadow: 0 0 60px var(--glow), inset 0 -10px 30px rgba(0,0,0,.25); transition: background .6s, box-shadow .6s; }
+    .orb::before, .orb::after { content: ''; position: absolute; inset: -14px; border-radius: 50%; border: 2px solid var(--c); opacity: 0; animation: ring 2.6s ease-out infinite; }
+    .orb::after { animation-delay: 1.3s; }
+    @keyframes ring { 0% { transform: scale(.85); opacity: .7; } 100% { transform: scale(1.35); opacity: 0; } }
+    body[data-state="sleeping"] .orb { animation: breathe 4s ease-in-out infinite; }
+    @keyframes breathe { 50% { transform: scale(.94); filter: brightness(.8); } }
+    @media (prefers-reduced-motion: reduce) { .orb::before, .orb::after, body[data-state="sleeping"] .orb { animation: none; } }
+    .label { display: inline-block; font: 11px 'Press Start 2P', monospace; color: var(--c); letter-spacing: .05em; margin-bottom: 12px; }
+    h1 { font-size: clamp(30px, 6vw, 48px); line-height: 1.1; margin: 0 0 12px; font-weight: 800; }
+    .msg { color: var(--muted); max-width: 520px; margin: 0 auto; font-size: 17px; }
+    .refresh { margin-top: 18px; font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; }
+    .ring { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(var(--c) var(--p, 0%), var(--panel2) 0); }
+
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 10px; }
+    @media (max-width: 680px) { .grid { grid-template-columns: 1fr 1fr; } }
+    .metric { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    .metric span { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+    .metric b { display: block; font-size: 22px; font-weight: 800; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-top: 16px; }
+    .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 14px; font-weight: 600; }
+    .comp { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); gap: 12px; }
+    .comp:first-of-type { border-top: none; }
+    .pill { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+    .pill.ok { color: #8ee07f; background: rgba(98,196,90,.12); }
+    .pill.warn { color: #ffe08a; background: rgba(245,197,66,.12); }
+    .pill.bad { color: #ff9aa3; background: rgba(255,95,109,.12); }
+    .pill.sleep { color: #c2b8ff; background: rgba(139,123,255,.14); }
+
+    .bars { display: flex; gap: 3px; height: 34px; align-items: stretch; }
+    .bars i { flex: 1; border-radius: 3px; background: var(--panel2); }
+    .bars i.online { background: #62c45a; } .bars i.maintenance { background: #f5c542; } .bars i.offline { background: #ff5f6d; }
+    .bars-legend { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    .events { list-style: none; margin: 0; padding: 0; }
+    .events li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line); }
+    .events li:first-child { border-top: none; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 7px; flex: none; }
+    .dot.online { background: #62c45a; } .dot.maintenance { background: #f5c542; } .dot.offline { background: #ff5f6d; }
+    .events b { font-size: 14px; } .events small { display: block; color: var(--muted); font-size: 12px; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; padding: 30px 16px; }
+  </style>
+</head>
+<body data-state="loading">
+  <div class="bg"></div>
+  <header>
+    <a class="brand" href="./"><span class="logo"></span>ModForge<b>AI</b></a>
+    <a class="open" href="./" id="openBtn">Open ModForge →</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="orb" id="orb">⏳</div>
+      <div class="label" id="label">CHECKING</div>
+      <h1 id="title">Checking status…</h1>
+      <p class="msg" id="msg">One moment, we are pinging the forge.</p>
+      <div class="refresh"><span class="ring" id="ring"></span><span id="refreshText">Live · updates every 15s</span></div>
+    </section>
+
+    <div class="grid">
+      <div class="metric"><span>Response</span><b id="mPing">–</b></div>
+      <div class="metric"><span>Mods built</span><b id="mBuilt">–</b></div>
+      <div class="metric"><span>In queue</span><b id="mQueue">–</b></div>
+      <div class="metric"><span>Since</span><b id="mSince">–</b></div>
+    </div>
+
+    <div class="card">
+      <h2>Components</h2>
+      <div class="comp"><span>🌐 Website & redirect</span><span class="pill ok">Operational</span></div>
+      <div class="comp"><span>⚒️ Mod builder</span><span class="pill" id="cBuilder">–</span></div>
+      <div class="comp"><span>🤖 AI engine</span><span class="pill" id="cAI">–</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Recent history</h2>
+      <div class="bars" id="bars"></div>
+      <div class="bars-legend"><span>Older</span><span>Now</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Events</h2>
+      <ul class="events" id="events"><li><small>No events yet.</small></li></ul>
+    </div>
+  </main>
+  <footer>ModForge AI status · not affiliated with Mojang or Microsoft</footer>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const repo = location.pathname.split('/').filter(Boolean)[0];
+    const owner = location.hostname.split('.')[0];
+    const SOURCES = [
+      () => fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/tunnel.json?t=${Date.now()}`, { cache: 'no-store' }),
+      () => fetch(`https://api.github.com/repos/${owner}/${repo}/contents/tunnel.json?t=${Date.now()}`, { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' }),
+      () => fetch(`tunnel.json?t=${Date.now()}`, { cache: 'no-store' }),
+    ];
+    const VIEW = {
+      online:      { icon: '✅', label: 'ALL SYSTEMS GO', title: 'Online', msg: 'ModForge AI is up and forging mods. Jump in!' },
+      maintenance: { icon: '🛠️', label: 'MAINTENANCE', title: 'Under maintenance', msg: 'We are improving ModForge AI. Back soon!' },
+      offline:     { icon: '🔌', label: 'OFFLINE', title: 'Offline', msg: 'The forge is switched off right now. Check back later!' },
+      sleeping:    { icon: '😴', label: 'SLEEPING', title: 'Sleeping', msg: 'The server is not answering – it is probably napping. It wakes up automatically.' },
+    };
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const ago = (iso) => {
+      const s = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+      if (s < 60) return 'just now';
+      if (s < 3600) return Math.floor(s / 60) + ' min';
+      if (s < 86400) return Math.floor(s / 3600) + ' h ' + Math.floor((s % 3600) / 60) + ' m';
+      return Math.floor(s / 86400) + ' d';
+    };
+    const pill = (el, cls, text) => { el.className = 'pill ' + cls; el.textContent = text; };
+
+    async function check() {
+      const all = (await Promise.all(SOURCES.map((s) => s().then((r) => (r.ok ? r.json() : null)).catch(() => null))))
+        .filter(Boolean).sort((a, b) => String(b.updated || '').localeCompare(String(a.updated || '')));
+      const s = all[0] || {};
+      let state = s.maintenance ? 'maintenance' : 'offline', ping = null, stats = null, liveUrl = null;
+
+      if (!s.maintenance) {
+        // Try every reported URL – some sources can be stale
+        for (const url of [...new Set(all.filter((x) => x.online && x.url && !x.maintenance).map((x) => x.url))]) {
+          const t0 = performance.now();
+          const ok = await fetch(url + '/api/health', { signal: AbortSignal.timeout(8000), cache: 'no-store' }).then((r) => r.ok).catch(() => false);
+          if (ok) { state = 'online'; ping = Math.round(performance.now() - t0); liveUrl = url; break; }
+        }
+        // Reported online, but nobody answers -> sleeping
+        if (state !== 'online' && s.online) state = 'sleeping';
+      }
+      if (liveUrl) stats = await fetch(liveUrl + '/api/stats', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+
+      const v = VIEW[state];
+      document.body.dataset.state = state;
+      $('orb').textContent = v.icon;
+      $('label').textContent = v.label;
+      $('title').textContent = state === 'maintenance' && s.title ? s.title : v.title;
+      $('msg').textContent = state === 'maintenance' && s.message ? s.message : v.msg;
+      $('openBtn').style.display = state === 'online' ? '' : 'none';
+      document.title = `${v.icon} ${v.title} – ModForge AI Status`;
+
+      $('mPing').textContent = ping != null ? ping + ' ms' : '–';
+      $('mBuilt').textContent = stats ? stats.built.toLocaleString('en') : '–';
+      $('mQueue').textContent = stats ? stats.queue : '–';
+      $('mSince').textContent = s.updated ? ago(s.updated) : '–';
+
+      if (state === 'online') { pill($('cBuilder'), 'ok', 'Operational'); pill($('cAI'), 'ok', 'Operational'); }
+      else if (state === 'maintenance') { pill($('cBuilder'), 'warn', 'Maintenance'); pill($('cAI'), 'warn', 'Maintenance'); }
+      else if (state === 'sleeping') { pill($('cBuilder'), 'sleep', 'Sleeping'); pill($('cAI'), 'sleep', 'Sleeping'); }
+      else { pill($('cBuilder'), 'bad', 'Offline'); pill($('cAI'), 'bad', 'Offline'); }
+
+      const hist = (s.history || []).slice(0, 30);
+      const bars = [...hist].reverse().map((h) => `<i class="${esc(h.state)}" title="${esc(h.state)} · ${new Date(h.at).toLocaleString()}"></i>`);
+      while (bars.length < 30) bars.unshift('<i></i>');
+      $('bars').innerHTML = bars.join('');
+      const NAMES = { online: 'Went online', offline: 'Went offline', maintenance: 'Maintenance started' };
+      $('events').innerHTML = hist.length ? hist.slice(0, 10).map((h) => `
+        <li><span class="dot ${esc(h.state)}"></span><div><b>${esc(h.title || NAMES[h.state] || h.state)}</b>
+        <small>${new Date(h.at).toLocaleString()} · ${ago(h.at)} ago</small></div></li>`).join('')
+        : '<li><small>No events yet.</small></li>';
+    }
+
+    // Live refresh with a small countdown ring
+    const EVERY = 15;
+    let left = 0;
+    setInterval(() => {
+      left--;
+      $('ring').style.setProperty('--p', ((EVERY - left) / EVERY * 100) + '%');
+      if (left <= 0) { left = EVERY; check(); }
+    }, 1000);
+  </script>
+</body>
+</html>
