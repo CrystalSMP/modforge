@@ -2,12 +2,17 @@
   "state": "online",
   "online": true,
   "maintenance": false,
-  "ai": false,
+  "ai": true,
   "url": "https://adware-drugs-blogs-loan.trycloudflare.com",
-  "title": "⚠️ AI paused",
-  "message": "We are switching to a faster AI. Back in 10 minutes!",
-  "updated": "2026-11-05T15:47:18.669Z",
+  "title": "📢 New update",
+  "message": "Textures got a big upgrade today!",
+  "updated": "2026-11-05T15:48:25.419Z",
   "history": [
+    {
+      "state": "online",
+      "at": "2026-11-05T15:48:25.419Z",
+      "title": "📢 New update"
+    },
     {
       "state": "degraded",
       "at": "2026-11-05T15:47:18.669Z",
