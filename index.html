@@ -46,7 +46,7 @@
           if (!r.ok) continue;
           const s = await r.json();
           if (s.maintenance) {
-            document.getElementById('title').innerHTML = '🛠️ Wartungsarbeiten';
+            document.getElementById('title').textContent = s.title || '🛠️ Wartungsarbeiten';
             msg(s.message || 'ModForge AI wird gerade verbessert. Bald sind wir wieder da!', false);
             return setTimeout(tryConnect, 60000); // prüft jede Minute, ob es weitergeht
           }
