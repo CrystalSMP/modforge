@@ -25,10 +25,11 @@
     const repo = location.pathname.split('/').filter(Boolean)[0];
     const owner = location.hostname.split('.')[0];
     const t = () => Date.now();
+    // raw.githubusercontent.com zuerst: kein Abfrage-Limit (die GitHub-API erlaubt nur 60 pro Stunde)
     const SOURCES = [
-      () => fetch(`https://api.github.com/repos/${owner}/${repo}/contents/tunnel.json?t=${t()}`, { headers: { Accept: 'application/vnd.github.raw+json' } }),
-      () => fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/tunnel.json?t=${t()}`),
-      () => fetch(`tunnel.json?t=${t()}`),
+      () => fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/tunnel.json?t=${t()}`, { cache: 'no-store' }),
+      () => fetch(`https://api.github.com/repos/${owner}/${repo}/contents/tunnel.json?t=${t()}`, { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' }),
+      () => fetch(`tunnel.json?t=${t()}`, { cache: 'no-store' }),
     ];
     const msg = (text, spinning) => {
       document.getElementById('msg').textContent = text;
