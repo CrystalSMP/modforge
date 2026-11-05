@@ -44,12 +44,14 @@
         .filter(Boolean)
         .sort((a, b) => String(b.updated || '').localeCompare(String(a.updated || ''))); // neueste zuerst
 
-      // 1) Läuft irgendein gemeldeter Server wirklich? Dann sofort hin (egal was andere Quellen sagen)
-      for (const url of [...new Set(all.filter((s) => s.online && s.url).map((s) => s.url))]) {
-        if (await healthy(url)) return location.replace(url);
-      }
-      // 2) Sonst den NEUESTEN Status anzeigen
       const s = all[0] || {};
+      // 1) Neuester Status = Wartung / eigener Status? Dann den anzeigen (auch wenn der Server noch läuft)
+      // 2) Sonst: läuft ein gemeldeter Server wirklich? Dann hin (ältere Quellen können veraltet sein)
+      if (!s.maintenance) {
+        for (const url of [...new Set(all.filter((x) => x.online && x.url && !x.maintenance).map((x) => x.url))]) {
+          if (await healthy(url)) return location.replace(url);
+        }
+      }
       if (s.maintenance) {
         document.getElementById('title').textContent = s.title || '🛠️ Wartungsarbeiten';
         msg(s.message || 'ModForge AI wird gerade verbessert. Bald sind wir wieder da!', false);
