@@ -4,10 +4,15 @@
   "maintenance": false,
   "ai": false,
   "url": "https://thu-coast-prefers-wizard.trycloudflare.com",
-  "title": "Update incoming",
-  "message": "the v1.7.0 Is incoming",
-  "updated": "2026-11-05T16:47:29.799Z",
+  "title": "🔄 Updating",
+  "message": "ModForge is installing an update – back in a minute!",
+  "updated": "2026-11-05T16:48:04.878Z",
   "history": [
+    {
+      "state": "degraded",
+      "at": "2026-11-05T16:48:04.878Z",
+      "title": "Restarted"
+    },
     {
       "state": "degraded",
       "at": "2026-11-05T16:47:29.799Z",
