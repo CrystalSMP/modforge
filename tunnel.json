@@ -1,5 +1,7 @@
 {
-  "url": "https://loaded-developers-cloth-starsmerchant.trycloudflare.com",
-  "online": true,
-  "updated": "2026-11-05T15:21:49.053Z"
+  "online": false,
+  "maintenance": true,
+  "title": "This is just a test",
+  "message": "We are only Testing Our Ai module",
+  "updated": "2026-11-05T15:25:16.793Z"
 }
