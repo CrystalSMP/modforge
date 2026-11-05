@@ -39,25 +39,25 @@
 
     async function tryConnect() {
       msg('Verbinde mit dem Server…', true);
-      let sawOffline = false;
-      for (const src of SOURCES) {
-        try {
-          const r = await src();
-          if (!r.ok) continue;
-          const s = await r.json();
-          if (s.maintenance) {
-            document.getElementById('title').textContent = s.title || '🛠️ Wartungsarbeiten';
-            msg(s.message || 'ModForge AI wird gerade verbessert. Bald sind wir wieder da!', false);
-            return setTimeout(tryConnect, 60000); // prüft jede Minute, ob es weitergeht
-          }
-          if (!s.online || !s.url) { sawOffline = true; continue; }
-          if (await healthy(s.url)) return location.replace(s.url);
-        } catch {}
+      // Alle Quellen gleichzeitig abfragen – manche liefern zwischengespeicherte, alte Stände
+      const all = (await Promise.all(SOURCES.map((src) => src().then((r) => (r.ok ? r.json() : null)).catch(() => null))))
+        .filter(Boolean)
+        .sort((a, b) => String(b.updated || '').localeCompare(String(a.updated || ''))); // neueste zuerst
+
+      // 1) Läuft irgendein gemeldeter Server wirklich? Dann sofort hin (egal was andere Quellen sagen)
+      for (const url of [...new Set(all.filter((s) => s.online && s.url).map((s) => s.url))]) {
+        if (await healthy(url)) return location.replace(url);
       }
-      // Server nicht erreichbar (z. B. PC aus) -> wie Wartung anzeigen
-      document.getElementById('title').innerHTML = '😴 Gerade offline';
-      msg('ModForge AI ist im Moment nicht erreichbar. Die Seite verbindet sich automatisch, sobald sie wieder da ist.', false);
-      setTimeout(tryConnect, 15000); // alle 15 Sekunden neu versuchen
+      // 2) Sonst den NEUESTEN Status anzeigen
+      const s = all[0] || {};
+      if (s.maintenance) {
+        document.getElementById('title').textContent = s.title || '🛠️ Wartungsarbeiten';
+        msg(s.message || 'ModForge AI wird gerade verbessert. Bald sind wir wieder da!', false);
+      } else {
+        document.getElementById('title').textContent = '😴 Gerade offline';
+        msg('ModForge AI ist im Moment nicht erreichbar. Die Seite verbindet sich automatisch, sobald sie wieder da ist.', false);
+      }
+      setTimeout(tryConnect, 30000); // alle 30 Sekunden neu prüfen
     }
     tryConnect();
   </script>
