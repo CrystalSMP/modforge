@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,7 +18,7 @@
     <h1>⛏ ModForge <b>AI</b></h1>
     <h2 id="title" style="font-size:20px;margin:16px 0 0;color:#f5c542"></h2>
     <div class="spin" id="spin"></div>
-    <p id="msg">Verbinde mit dem Server…</p>
+    <p id="msg">Connecting to the server…</p>
   </div>
   <script>
     // Aktuelle Tunnel-Adresse lesen – mehrere Quellen, falls eine begrenzt oder veraltet ist
@@ -38,7 +38,7 @@
     const healthy = (url) => fetch(url + '/api/health', { signal: AbortSignal.timeout(8000) }).then((x) => x.ok).catch(() => false);
 
     async function tryConnect() {
-      msg('Verbinde mit dem Server…', true);
+      msg('Connecting to the server…', true);
       // Alle Quellen gleichzeitig abfragen – manche liefern zwischengespeicherte, alte Stände
       const all = (await Promise.all(SOURCES.map((src) => src().then((r) => (r.ok ? r.json() : null)).catch(() => null))))
         .filter(Boolean)
@@ -53,11 +53,12 @@
         }
       }
       if (s.maintenance) {
-        document.getElementById('title').textContent = s.title || '🛠️ Wartungsarbeiten';
-        msg(s.message || 'ModForge AI wird gerade verbessert. Bald sind wir wieder da!', false);
+        document.getElementById('title').textContent = s.title || '🛠️ Under maintenance';
+        msg(s.message || 'ModForge AI is being improved right now. We will be back soon!', false);
       } else {
-        document.getElementById('title').textContent = '😴 Gerade offline';
-        msg('ModForge AI ist im Moment nicht erreichbar. Die Seite verbindet sich automatisch, sobald sie wieder da ist.', false);
+        document.getElementById('title').textContent = '😴 Currently offline';
+        msg('ModForge AI is not reachable right now. This page reconnects automatically as soon as it is back.', false);
+        document.getElementById('msg').insertAdjacentHTML('beforeend', ' <a href="status.html" style="color:#62c45a">Live status →</a>');
       }
       setTimeout(tryConnect, 30000); // alle 30 Sekunden neu prüfen
     }
