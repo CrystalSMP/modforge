@@ -4,10 +4,15 @@
   "maintenance": false,
   "ai": false,
   "url": "https://thu-coast-prefers-wizard.trycloudflare.com",
-  "title": "We need to go down Our Ai has big problems",
-  "message": "We Need to build A New ai Cause our old Crashed and get lost We are In 1 week back",
-  "updated": "2026-11-05T15:54:50.454Z",
+  "title": "🔄 Updating",
+  "message": "ModForge is installing an update – back in a minute!",
+  "updated": "2026-11-05T15:56:01.374Z",
   "history": [
+    {
+      "state": "degraded",
+      "at": "2026-11-05T15:56:01.374Z",
+      "title": "Updated to v1.4.1"
+    },
     {
       "state": "degraded",
       "at": "2026-11-05T15:54:50.454Z",
