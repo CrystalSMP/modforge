@@ -1,5 +1,15 @@
 {
-  "url": "https://loaded-developers-cloth-starsmerchant.trycloudflare.com",
+  "state": "online",
   "online": true,
-  "updated": "2026-11-05T15:28:18.588Z"
+  "maintenance": false,
+  "url": "https://bear-fifteen-advertisers-discipline.trycloudflare.com",
+  "title": null,
+  "message": null,
+  "updated": "2026-11-05T15:33:13.477Z",
+  "history": [
+    {
+      "state": "online",
+      "at": "2026-11-05T15:33:13.477Z"
+    }
+  ]
 }
