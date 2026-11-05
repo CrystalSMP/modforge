@@ -70,6 +70,7 @@
     .bars i { flex: 1; border-radius: 3px; background: var(--panel2); }
     .bars i.online { background: #62c45a; } .bars i.maintenance { background: #f5c542; } .bars i.offline { background: #ff5f6d; } .bars i.degraded { background: #ff9f43; }
     .dot.degraded { background: #ff9f43; }
+    .ver { font: 600 11px Inter, sans-serif; color: var(--muted); }
     .notice { margin: 18px auto 0; max-width: 560px; padding: 12px 16px; border-radius: 12px; background: rgba(79,224,212,.1); border: 1px solid rgba(79,224,212,.3); color: #b8f3ee; font-size: 14px; }
     .notice b { color: var(--text); margin-right: 6px; }
     .bars-legend { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
@@ -125,7 +126,7 @@
       <ul class="events" id="events"><li><small>No events yet.</small></li></ul>
     </div>
   </main>
-  <footer>ModForge AI status · not affiliated with Mojang or Microsoft</footer>
+  <footer>ModForge AI status <span class="ver" id="ver"></span> · not affiliated with Mojang or Microsoft</footer>
 
   <script>
     const $ = (id) => document.getElementById(id);
@@ -171,6 +172,7 @@
         if (state === 'online' && s.ai === false) state = 'degraded';
       }
       if (liveUrl) stats = await fetch(liveUrl + '/api/stats', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+      if (liveUrl) fetch(liveUrl + '/api/changelog').then((r) => r.json()).then((c) => { if (c[0]) $('ver').textContent = 'v' + c[0].version; }).catch(() => {});
 
       const v = VIEW[state];
       document.body.dataset.state = state;
