@@ -6,8 +6,13 @@
   "url": "https://thu-coast-prefers-wizard.trycloudflare.com",
   "title": "🔄 Updating",
   "message": "ModForge is installing an update – back in a minute!",
-  "updated": "2026-11-05T17:07:17.112Z",
+  "updated": "2026-11-05T17:15:26.601Z",
   "history": [
+    {
+      "state": "online",
+      "at": "2026-11-05T17:15:26.601Z",
+      "title": "Restarted"
+    },
     {
       "state": "online",
       "at": "2026-11-05T17:07:17.112Z",
