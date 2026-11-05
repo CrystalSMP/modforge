@@ -5,9 +5,14 @@
   "ai": false,
   "url": "https://thu-coast-prefers-wizard.trycloudflare.com",
   "title": "Update incoming",
-  "message": "Creating mods is paused right now. You can still browse the site.",
-  "updated": "2026-11-05T16:47:04.306Z",
+  "message": "the v1.7.0 Is incoming",
+  "updated": "2026-11-05T16:47:29.799Z",
   "history": [
+    {
+      "state": "degraded",
+      "at": "2026-11-05T16:47:29.799Z",
+      "title": "Update incoming"
+    },
     {
       "state": "degraded",
       "at": "2026-11-05T16:47:04.306Z",
