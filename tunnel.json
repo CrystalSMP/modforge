@@ -2,12 +2,17 @@
   "state": "online",
   "online": true,
   "maintenance": false,
-  "ai": true,
+  "ai": false,
   "url": "https://thu-coast-prefers-wizard.trycloudflare.com",
-  "title": "🔄 Updating",
-  "message": "ModForge is installing an update – back in a minute!",
-  "updated": "2026-11-05T16:44:37.883Z",
+  "title": "Update incoming",
+  "message": "Creating mods is paused right now. You can still browse the site.",
+  "updated": "2026-11-05T16:47:04.306Z",
   "history": [
+    {
+      "state": "degraded",
+      "at": "2026-11-05T16:47:04.306Z",
+      "title": "Update incoming"
+    },
     {
       "state": "online",
       "at": "2026-11-05T16:44:37.883Z",
