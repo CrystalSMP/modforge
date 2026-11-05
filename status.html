@@ -14,6 +14,7 @@
     }
     body[data-state="maintenance"] { --c: #f5c542; --c2: #ffe08a; --glow: rgba(245,197,66,.45); }
     body[data-state="offline"]     { --c: #ff5f6d; --c2: #ff9aa3; --glow: rgba(255,95,109,.45); }
+    body[data-state="degraded"]    { --c: #ff9f43; --c2: #ffc993; --glow: rgba(255,159,67,.45); }
     body[data-state="sleeping"]    { --c: #8b7bff; --c2: #c2b8ff; --glow: rgba(139,123,255,.45); }
     body[data-state="loading"]     { --c: #9099ad; --c2: #c9d1e0; --glow: rgba(144,153,173,.3); }
     * { box-sizing: border-box; }
@@ -67,7 +68,10 @@
 
     .bars { display: flex; gap: 3px; height: 34px; align-items: stretch; }
     .bars i { flex: 1; border-radius: 3px; background: var(--panel2); }
-    .bars i.online { background: #62c45a; } .bars i.maintenance { background: #f5c542; } .bars i.offline { background: #ff5f6d; }
+    .bars i.online { background: #62c45a; } .bars i.maintenance { background: #f5c542; } .bars i.offline { background: #ff5f6d; } .bars i.degraded { background: #ff9f43; }
+    .dot.degraded { background: #ff9f43; }
+    .notice { margin: 18px auto 0; max-width: 560px; padding: 12px 16px; border-radius: 12px; background: rgba(79,224,212,.1); border: 1px solid rgba(79,224,212,.3); color: #b8f3ee; font-size: 14px; }
+    .notice b { color: var(--text); margin-right: 6px; }
     .bars-legend { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
 
     .events { list-style: none; margin: 0; padding: 0; }
@@ -92,6 +96,7 @@
       <div class="label" id="label">CHECKING</div>
       <h1 id="title">Checking status…</h1>
       <p class="msg" id="msg">One moment, we are pinging the forge.</p>
+      <div class="notice" id="notice" hidden><b id="noticeTitle"></b><span id="noticeMsg"></span></div>
       <div class="refresh"><span class="ring" id="ring"></span><span id="refreshText">Live · updates every 15s</span></div>
     </section>
 
@@ -135,6 +140,7 @@
       online:      { icon: '✅', label: 'ALL SYSTEMS GO', title: 'Online', msg: 'ModForge AI is up and forging mods. Jump in!' },
       maintenance: { icon: '🛠️', label: 'MAINTENANCE', title: 'Under maintenance', msg: 'We are improving ModForge AI. Back soon!' },
       offline:     { icon: '🔌', label: 'OFFLINE', title: 'Offline', msg: 'The forge is switched off right now. Check back later!' },
+      degraded:    { icon: '⏸️', label: 'AI PAUSED', title: 'AI paused', msg: 'The website is online, but creating mods is paused right now.' },
       sleeping:    { icon: '😴', label: 'SLEEPING', title: 'Sleeping', msg: 'The server is not answering – it is probably napping. It wakes up automatically.' },
     };
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -162,6 +168,7 @@
         }
         // Reported online, but nobody answers -> sleeping
         if (state !== 'online' && s.online) state = 'sleeping';
+        if (state === 'online' && s.ai === false) state = 'degraded';
       }
       if (liveUrl) stats = await fetch(liveUrl + '/api/stats', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
 
@@ -169,9 +176,13 @@
       document.body.dataset.state = state;
       $('orb').textContent = v.icon;
       $('label').textContent = v.label;
-      $('title').textContent = state === 'maintenance' && s.title ? s.title : v.title;
-      $('msg').textContent = state === 'maintenance' && s.message ? s.message : v.msg;
-      $('openBtn').style.display = state === 'online' ? '' : 'none';
+      $('title').textContent = (state === 'maintenance' || state === 'degraded') && s.title ? s.title : v.title;
+      const showNotice = state === 'online' && (s.title || s.message);
+      $('notice').hidden = !showNotice;
+      $('noticeTitle').textContent = showNotice ? s.title || '' : '';
+      $('noticeMsg').textContent = showNotice ? s.message || '' : '';
+      $('msg').textContent = (state === 'maintenance' || state === 'degraded') && s.message ? s.message : v.msg;
+      $('openBtn').style.display = state === 'online' || state === 'degraded' ? '' : 'none';
       document.title = `${v.icon} ${v.title} – ModForge AI Status`;
 
       $('mPing').textContent = ping != null ? ping + ' ms' : '–';
@@ -180,6 +191,7 @@
       $('mSince').textContent = s.updated ? ago(s.updated) : '–';
 
       if (state === 'online') { pill($('cBuilder'), 'ok', 'Operational'); pill($('cAI'), 'ok', 'Operational'); }
+      else if (state === 'degraded') { pill($('cBuilder'), 'warn', 'Paused'); pill($('cAI'), 'warn', 'Paused'); }
       else if (state === 'maintenance') { pill($('cBuilder'), 'warn', 'Maintenance'); pill($('cAI'), 'warn', 'Maintenance'); }
       else if (state === 'sleeping') { pill($('cBuilder'), 'sleep', 'Sleeping'); pill($('cAI'), 'sleep', 'Sleeping'); }
       else { pill($('cBuilder'), 'bad', 'Offline'); pill($('cAI'), 'bad', 'Offline'); }
@@ -188,7 +200,7 @@
       const bars = [...hist].reverse().map((h) => `<i class="${esc(h.state)}" title="${esc(h.state)} · ${new Date(h.at).toLocaleString()}"></i>`);
       while (bars.length < 30) bars.unshift('<i></i>');
       $('bars').innerHTML = bars.join('');
-      const NAMES = { online: 'Went online', offline: 'Went offline', maintenance: 'Maintenance started' };
+      const NAMES = { online: 'Went online', offline: 'Went offline', maintenance: 'Maintenance started', degraded: 'AI paused' };
       $('events').innerHTML = hist.length ? hist.slice(0, 10).map((h) => `
         <li><span class="dot ${esc(h.state)}"></span><div><b>${esc(h.title || NAMES[h.state] || h.state)}</b>
         <small>${new Date(h.at).toLocaleString()} · ${ago(h.at)} ago</small></div></li>`).join('')
