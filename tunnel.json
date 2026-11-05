@@ -1,12 +1,17 @@
 {
-  "state": "maintenance",
-  "online": false,
-  "maintenance": true,
-  "url": null,
-  "title": "We need to go down Our Ai has big problems",
-  "message": "We have problems with our Ai We have A massive problem while The training procces Our Ai is Destroyd We are working to load a backup And train the ai The website shoud be tomorow Online again",
-  "updated": "2026-11-05T15:43:51.047Z",
+  "state": "online",
+  "online": true,
+  "maintenance": false,
+  "ai": true,
+  "url": "https://adware-drugs-blogs-loan.trycloudflare.com",
+  "title": null,
+  "message": null,
+  "updated": "2026-11-05T15:47:08.834Z",
   "history": [
+    {
+      "state": "online",
+      "at": "2026-11-05T15:47:08.834Z"
+    },
     {
       "state": "maintenance",
       "at": "2026-11-05T15:43:51.047Z",
