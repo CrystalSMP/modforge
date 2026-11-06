@@ -1,13 +1,18 @@
 {
-  "state": "online",
-  "online": true,
-  "maintenance": false,
-  "ai": true,
-  "url": "https://thu-coast-prefers-wizard.trycloudflare.com",
-  "title": "🔄 Updating",
-  "message": "ModForge is installing an update – back in a minute!",
-  "updated": "2026-11-05T18:44:21.201Z",
+  "state": "maintenance",
+  "online": false,
+  "maintenance": true,
+  "ai": false,
+  "url": null,
+  "title": "Maintrence",
+  "message": "We are curently under maintrence We are Soon back",
+  "updated": "2026-11-06T18:53:35.610Z",
   "history": [
+    {
+      "state": "maintenance",
+      "at": "2026-11-06T18:53:35.610Z",
+      "title": "Maintrence"
+    },
     {
       "state": "online",
       "at": "2026-11-05T18:44:21.201Z",
@@ -147,11 +152,6 @@
     {
       "state": "online",
       "at": "2026-11-05T15:47:08.834Z"
-    },
-    {
-      "state": "maintenance",
-      "at": "2026-11-05T15:43:51.047Z",
-      "title": "We need to go down Our Ai has big problems"
     }
   ]
 }
